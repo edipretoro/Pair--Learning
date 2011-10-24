@@ -8,39 +8,46 @@ use MP3::Tag;
 use XML::Writer;
 use IO::File;
 
-my $iter = File::Next::files( { file_filter => sub { /\.mp3$/ } }, '.' );
+my $iter = File::Next::files(
+    {
+        file_filter => sub { /\.mp3$/ }
+    },
+    '.'
+);
 
-while (defined( my $file = $iter->() )) {
-  my $mp3 = MP3::Tag->new($file);
-  my @metadata = $mp3->autoinfo();
+my $output = new IO::File( "output.xml", ">>:utf8" );
 
-  my $output = new IO::File ("output.xml", ">>:utf8");
+my $writer = new XML::Writer(
+    OUTPUT      => $output,
+    DATA_MODE   => 1,
+    DATA_INDENT => 2
+);
 
-  my $writer = new XML::Writer(OUTPUT => $output,
-			       DATA_MODE   => 1,
-			       DATA_INDENT => 2
-			      );
+$writer->startTag("songs");
 
-  $writer->startTag("song",
-		    "filename" => "/home/miniseb/Media/Musique/$file");
+while ( defined( my $file = $iter->() ) ) {
+    my $mp3      = MP3::Tag->new($file);
+    my @metadata = $mp3->autoinfo();
 
-  $writer->startTag("title",
-		    "n" => "$metadata[1]");
-  $writer->characters("$metadata[0]");
-  $writer->endTag("title");
+    $writer->startTag( "song",
+        "filename" => "/home/miniseb/Media/Musique/$file" );
 
-  $writer->startTag("artist");
-  $writer->characters("$metadata[2]");
-  $writer->endTag("artist");
+    $writer->startTag( "title", "n" => "$metadata[1]" );
+    $writer->characters("$metadata[0]");
+    $writer->endTag("title");
 
-  $writer->startTag("album",
-		    "year" => "$metadata[5]");
-  $writer->characters("$metadata[3]");
-  $writer->endTag("album");
+    $writer->startTag("artist");
+    $writer->characters("$metadata[2]");
+    $writer->endTag("artist");
 
-  $writer->endTag("song");
+    $writer->startTag( "album", "year" => "$metadata[5]" );
+    $writer->characters("$metadata[3]");
+    $writer->endTag("album");
 
-  $writer->end();
-  $output->close;
+    $writer->endTag("song");
 
-};
+}
+
+$writer->endTag("songs");
+$writer->end();
+$output->close;
