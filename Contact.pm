@@ -19,19 +19,20 @@ __PACKAGE__->add_columns(
         'is_auto_increment' => 0,
         'default_value'     => undef,
         'is_foreign_key'    => 0,
-        'name'              => 'name',
+        'name'              => 'phone',
         'is_nullable'       => 0
     },
     'mail' => {
         'data_type'         => 'text',
         'is_auto_increment' => 0,
         'default_value'     => undef,
-        'is_foreign_key'    => 1,
-        'name'              => 'contacts',
+        'is_foreign_key'    => 0,
+        'name'              => 'mail',
         'is_nullable'       => 1
     }
 );
 
 __PACKAGE__->set_primary_key('id');
+__PACKAGE__->has_many( 'persons', 'db1::Schema::Result::Pers', 'id' );
 
 1;
